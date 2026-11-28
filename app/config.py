@@ -18,9 +18,13 @@ class Settings:
 
 def load_settings() -> Settings:
     """อ่านค่าจาก env var ถ้าไม่ได้ตั้งไว้จะใช้ค่าเริ่มต้นสำหรับเครื่องนักพัฒนา"""
-    # TODO: อ่าน LOG_LEVEL ด้วย os.getenv("LOG_LEVEL", "INFO") แปลงเป็นตัวพิมพ์ใหญ่
-    #       ถ้าไม่อยู่ใน LOG_LEVELS ให้ raise ValueError พร้อมข้อความไทยที่บอกค่าที่ยอมรับและค่าที่ได้
-    # TODO: คืน Settings(...) โดย
-    #       base_url      = BASE_URL ค่าเริ่มต้น "http://localhost:8000" และตัด / ท้ายออกด้วย .rstrip("/")
-    #       database_path = DATABASE_PATH ค่าเริ่มต้น "links.db"
-    raise NotImplementedError
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+    if log_level not in LOG_LEVELS:
+        raise ValueError(
+            f"LOG_LEVEL ต้องเป็นหนึ่งใน {', '.join(LOG_LEVELS)} แต่ได้ '{log_level}'"
+        )
+    return Settings(
+        base_url=os.getenv("BASE_URL", "http://localhost:8000").rstrip("/"),
+        database_path=os.getenv("DATABASE_PATH", "links.db"),
+        log_level=log_level,
+    )

@@ -31,15 +31,22 @@ class SQLiteLinkRepository(LinkRepository):
             )
 
     def get(self, code: str) -> Link | None:
-        # TODO: SELECT แถวของรหัสนี้ (ดู SQL ในฟังก์ชัน link_info ของ app.py)
-        #       ไม่พบให้คืน None, พบให้คืน Link(row["code"], row["url"], row["clicks"], row["created_at"])
-        raise NotImplementedError
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT code, url, clicks, created_at FROM links WHERE code = ?",
+                (code,),
+            ).fetchone()
+        if row is None:
+            return None
+        return Link(row["code"], row["url"], row["clicks"], row["created_at"])
 
     def increment_clicks(self, code: str) -> None:
-        # TODO: UPDATE ให้ clicks เพิ่มขึ้น 1 (ดู SQL ในฟังก์ชัน follow ของ app.py)
-        raise NotImplementedError
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE links SET clicks = clicks + 1 WHERE code = ?",
+                (code,),
+            )
 
     def ping(self) -> None:
-        # TODO: ลองอ่านตาราง links แบบเบาที่สุด: SELECT 1 FROM links LIMIT 1
-        #       ไม่ต้องจับ exception ปล่อยให้หลุดออกไป ชั้นบนจะจัดการเอง
-        raise NotImplementedError
+        with self._connect() as conn:
+            conn.execute("SELECT 1 FROM links LIMIT 1")

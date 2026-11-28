@@ -28,20 +28,28 @@ class LinkService:
 
     def create(self, url: str) -> Link:
         """ตรวจ URL แล้วสร้างลิงก์ใหม่"""
-        # TODO: ถ้า url ไม่ขึ้นต้นด้วย http:// หรือ https:// ให้
-        #       raise InvalidUrlError("URL ต้องขึ้นต้นด้วย http:// หรือ https://")
-        # TODO: สร้าง Link(code=self._new_code(), url=url, clicks=0,
-        #       created_at=datetime.now(timezone.utc).isoformat()) แล้ว self.repo.add(link) และ return link
-        raise NotImplementedError
+        if not url.startswith(("http://", "https://")):
+            raise InvalidUrlError("URL ต้องขึ้นต้นด้วย http:// หรือ https://")
+        link = Link(
+            code=self._new_code(),
+            url=url,
+            clicks=0,
+            created_at=datetime.now(timezone.utc).isoformat(),
+        )
+        self.repo.add(link)
+        return link
 
     def get(self, code: str) -> Link:
-        # TODO: link = self.repo.get(code) ถ้าเป็น None ให้ raise LinkNotFoundError("ไม่พบลิงก์นี้")
-        raise NotImplementedError
+        link = self.repo.get(code)
+        if link is None:
+            raise LinkNotFoundError("ไม่พบลิงก์นี้")
+        return link
 
     def follow(self, code: str) -> str:
         """คืน URL จริงของรหัสนี้ และนับคลิกเพิ่ม 1"""
-        # TODO: ใช้ self.get(code) (จะได้ข้อผิดพลาดเดียวกันเมื่อไม่พบ) แล้วเรียก repo.increment_clicks
-        raise NotImplementedError
+        link = self.get(code)
+        self.repo.increment_clicks(code)
+        return link.url
 
     def check_storage(self) -> None:
         """ใช้โดย /healthz: โยน exception ถ้าที่เก็บข้อมูลใช้งานไม่ได้"""

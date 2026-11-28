@@ -20,11 +20,15 @@ class LinkIn(BaseModel):
 @router.get("/healthz")
 def healthz(service: LinkService = Depends(get_service)):
     """เช็คว่าแอปทำงานและเปิดฐานข้อมูลได้ ถ้าฐานข้อมูลเสียจะตอบ 503"""
-    # TODO: ลองเรียก service.check_storage() ใน try
-    #   ถ้าเกิด Exception: log.error("ตรวจฐานข้อมูลไม่ผ่าน", extra={"error": str(exc)})
-    #     แล้วคืน JSONResponse(status_code=503, content={"status": "error", "database": "ใช้งานไม่ได้"})
-    #   ถ้าผ่าน: คืน {"status": "ok", "database": "ok"}
-    raise NotImplementedError
+    try:
+        service.check_storage()
+    except Exception as exc:
+        log.error("ตรวจฐานข้อมูลไม่ผ่าน", extra={"error": str(exc)})
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "database": "ใช้งานไม่ได้"},
+        )
+    return {"status": "ok", "database": "ok"}
 
 
 @router.post("/api/links", status_code=201)
